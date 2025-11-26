@@ -7,11 +7,24 @@ export class JikanController {
 
   @Get('search')
   async search(@Query('q') q: string) {
-    return this.jikanService.searchAnime(q || '');
+    const raw = await this.jikanService.searchAnime(q || '');
+    // On ne garde que le titre et l'image principale
+    return {
+      pagination: raw.pagination,
+      data: raw.data.map((item: any) => ({
+        title: item.title,
+        image: item.images?.jpg?.image_url || null
+      }))
+    };
   }
 
   @Get(':id')
   async getById(@Param('id', ParseIntPipe) id: number) {
-    return this.jikanService.getAnimeById(id);
+    const raw = await this.jikanService.getAnimeById(id);
+    const item = raw.data;
+    return {
+      title: item.title,
+      image: item.images?.jpg?.image_url || null
+    };
   }
 }
