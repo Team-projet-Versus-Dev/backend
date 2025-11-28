@@ -2,11 +2,11 @@ name: Build & Push Backend Docker Image
 
 on:
   push:
-    branches: [ main ]   # se lance à chaque push sur main
+    branches: [ main ]
 
 permissions:
   contents: read
-  packages: write         # nécessaire pour pousser sur GHCR
+  packages: write
 
 jobs:
   build-and-push:
@@ -26,11 +26,9 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .   
-          file: ./Dockerfile  # chemin vers ce Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           tags: |
             ghcr.io/team-projet-versus-dev/backend:latest
             ghcr.io/team-projet-versus-dev/backend:${{ github.sha }}
-
-
