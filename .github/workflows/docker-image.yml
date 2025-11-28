@@ -31,4 +31,3 @@ jobs:
           push: true
           tags: |
             ghcr.io/team-projet-versus-dev/backend:latest
-            ghcr.io/team-projet-versus-dev/backend:${{ github.sha }}
