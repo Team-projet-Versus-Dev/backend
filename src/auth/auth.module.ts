@@ -12,7 +12,7 @@ import { DatabaseModule } from '../database/database.module';
     DatabaseModule,
     PassportModule,
     JwtModule.register({
-      secret: 'JWT_SECRET_KEY', // À mettre dans .env en production
+      secret: process.env.JWT_SECRET_KEY ?? 'dev_jwt_secret', // fallback dev
       signOptions: { expiresIn: '24h' },
     }),
   ],
