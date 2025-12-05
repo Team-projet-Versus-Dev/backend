@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+<<<<<<< HEAD
   app.enableCors();
 
   app.setGlobalPrefix('api');
@@ -14,6 +15,11 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true, // supprime les champs non attendus
       forbidNonWhitelisted: false,
+=======
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+>>>>>>> 1075418caabae709903ac7181232c477ef936749
       transform: true,
     }),
   );
