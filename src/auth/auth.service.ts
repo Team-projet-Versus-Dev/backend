@@ -2,7 +2,7 @@ import { Injectable, Inject, BadRequestException, UnauthorizedException } from '
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './user/user.entity';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
