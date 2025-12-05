@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { User } from './auth/user.entity';
+import { User } from './auth/user/user.entity';
 import { Jeu } from './questionnaire/questionnaire.entity';
 import { AnimeEnJeu } from './question/question.entity';
 import { Combat } from './combat/combat.entity';
@@ -10,11 +10,11 @@ export const databaseProviders = [
     useFactory: async () => {
       const dataSource = new DataSource({
         type: 'postgres',
-        host: 'ep-bold-frog-ada7p8ux-pooler.c-2.us-east-1.aws.neon.tech',
-        port: 5432,
-        username: 'neondb_owner',
-        password: 'npg_D5XbvSIynNg6',
-        database: 'neondb',
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT ?? 5432),
+        username: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
         ssl: {
           rejectUnauthorized: false,
         },
@@ -27,4 +27,3 @@ export const databaseProviders = [
     },
   },
 ];
-

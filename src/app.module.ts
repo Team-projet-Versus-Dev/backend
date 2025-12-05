@@ -1,17 +1,25 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { JikanService } from './jikan.service';
-import { JikanController } from './jikan.controller';
-import { DatabaseModule } from './database/database.module';
-import { QuestionnaireModule } from './questionnaire/questionnaire.module';
+import { ConfigModule } from '@nestjs/config';
+import { DatabaseProvider } from './database.provider';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { QuestionnaireModule } from './questionnaire/questionnaire.module';
 import { QuestionModule } from './question/question.module';
 import { CombatModule } from './combat/combat.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, QuestionnaireModule, QuestionModule, CombatModule],
-  controllers: [AppController, JikanController],
-  providers: [AppService, JikanService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    AuthModule,
+    UserModule,
+    QuestionnaireModule,
+    QuestionModule,
+    CombatModule,
+  ],
+  providers: [...DatabaseProvider],
+  exports: [...DatabaseProvider],
 })
 export class AppModule {}
