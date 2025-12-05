@@ -1,9 +1,11 @@
+// src/auth/user/user.provider.ts
+import { DataSource } from 'typeorm';
 import { User } from './user.entity';
 
 export const userProviders = [
   {
     provide: 'USER_REPOSITORY',
-    useFactory: (dataSource) => dataSource.getRepository(User),
-    inject: ['DATA_SOURCE'],
+    useFactory: (dataSource: DataSource) => dataSource.getRepository(User),
+    inject: ['DATA_SOURCE'],   
   },
 ];

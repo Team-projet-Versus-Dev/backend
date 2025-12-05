@@ -12,7 +12,7 @@ import {
 import { AnimeEnJeuService } from './question.service';
 import { AnimeEnJeu } from './question.entity';
 import { JwtGuard } from '../auth/jwt.guard';
-import { CreateAnimeEnJeuDto } from './dto/create-anime-en-jeu.dto';
+import { CreateAnimeEnJeuDto } from '../auth/dto/create-anime-en-jeu.dto';
 
 @Controller('anime')
 export class AnimeEnJeuController {
