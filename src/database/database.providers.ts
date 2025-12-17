@@ -14,13 +14,17 @@ export const databaseProviders = [
     useFactory: async (configService: ConfigService) => {
       const host = configService.get<string>('DB_HOST');
       const port = Number(configService.get<string>('DB_PORT') ?? 5432);
-      const username =
-        configService.get<string>('DB_USERNAME') ?? 'neondb_owner'; // 👈 fallback
+      const username = configService.get<string>('DB_USERNAME');
       const password = configService.get<string>('DB_PASSWORD');
       const database = configService.get<string>('DB_NAME');
 
-      // (optionnel) petit log pour vérifier ce qui est lu
-      console.log('[DB CONFIG]', { host, port, username, database });
+      console.log('========================================');
+      console.log('🔌 Connexion à Neon PostgreSQL...');
+      console.log('📍 Host:', host);
+      console.log('📍 Port:', port);
+      console.log('📍 Database:', database);
+      console.log('📍 Username:', username);
+      console.log('========================================');
 
       const dataSource = new DataSource({
         type: 'postgres',
@@ -29,13 +33,23 @@ export const databaseProviders = [
         username,
         password,
         database,
-        ssl: { rejectUnauthorized: false },
+        ssl: {
+          rejectUnauthorized: false,
+        },
         entities: [User, Jeu, AnimeEnJeu, Combat],
-        synchronize: true,
-        logging: false,
+        synchronize: true,  // Crée automatiquement les tables
+        logging: ['query', 'error', 'warn'],  // Log toutes les requêtes
       });
 
-      return dataSource.initialize();
+      try {
+        await dataSource.initialize();
+        console.log('✅ Connexion à Neon réussie !');
+        console.log('📋 Tables synchronisées: users, jeux, animes_en_jeu, combats');
+        return dataSource;
+      } catch (error) {
+        console.error('❌ Erreur de connexion à Neon:', error);
+        throw error;
+      }
     },
   },
 ];

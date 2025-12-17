@@ -8,12 +8,14 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { userProviders } from './user/user.provider';
 import { DatabaseModule } from '../database/database.module';
+import { CryptoModule } from '../crypto/crypto.module';
 
 @Module({
   imports: [
     ConfigModule,
     PassportModule,
     DatabaseModule,
+    CryptoModule,  // Pour générer les codes de déchiffrement
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: async (

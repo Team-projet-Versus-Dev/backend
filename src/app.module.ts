@@ -1,7 +1,9 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { DatabaseModule } from './database/database.module';
+import { CryptoModule } from './crypto/crypto.module';
 import { AuthModule } from './auth/auth.module';
 import { AnimeModule } from './anime/anime.module';
 import { DuelModule } from './duel/duel.module';
@@ -17,6 +19,7 @@ import { JikanService } from './jikan.service';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
+    CryptoModule,  // Module de chiffrement global
     AuthModule,
     AnimeModule,
     DuelModule,

@@ -1,4 +1,4 @@
-// src/user/user.entity.ts
+// src/auth/user/user.entity.ts
 import {
   Column,
   CreateDateColumn,
@@ -6,7 +6,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity()
+/**
+ * Entité User pour l'authentification
+ * La table sera nommée "users" dans PostgreSQL
+ */
+@Entity('users')  // Nom explicite de la table
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,7 +18,8 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  // mot de passe hashé, mais on évite de le sélectionner par défaut
+  // Mot de passe hashé avec Argon2
+  // select: false empêche de récupérer le password par défaut
   @Column({ select: false })
   password: string;
 

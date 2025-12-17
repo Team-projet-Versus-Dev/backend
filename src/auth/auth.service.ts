@@ -1,39 +1,143 @@
-import { Injectable, Inject, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './user/user.entity';
-import bcrypt from 'bcrypt';
+import { CryptoService } from '../crypto/crypto.service';
+import * as argon2 from 'argon2';
 
+/**
+ * Service d'authentification sécurisé
+ * 
+ * SÉCURITÉS IMPLÉMENTÉES :
+ * - Argon2id pour le hashage des mots de passe (+ salt automatique)
+ * - JWT pour l'authentification
+ * - Code de déchiffrement unique par utilisateur
+ */
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('USER_REPOSITORY') private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly cryptoService: CryptoService,
   ) {}
 
-  async signup(email: string, password: string): Promise<{ accessToken: string }> {
-    const existing = await this.userRepo.findOneBy({ email });
-    if (existing) throw new BadRequestException('Email already exists');
+  /**
+   * Inscription d'un nouvel utilisateur
+   */
+  async signup(email: string, password: string): Promise<{
+    accessToken: string;
+    decryptionCode: string;
+    user: { id: number; email: string; createdAt: Date };
+  }> {
+    const normalizedEmail = email.trim().toLowerCase();
 
-    // typage explicite
-    const hashed: string = await bcrypt.hash(password, 10);
+    // Vérifier si l'email existe déjà
+    const existing = await this.userRepo.findOneBy({ email: normalizedEmail });
+    if (existing) {
+      throw new BadRequestException('Email already exists');
+    }
 
-    const user = this.userRepo.create({ email, password: hashed });
+    // Hashage avec Argon2id (le SALT est généré automatiquement)
+    const hashedPassword = await argon2.hash(password, {
+      type: argon2.argon2id,
+      memoryCost: 65536,
+      timeCost: 3,
+      parallelism: 4,
+    });
+
+    const user = this.userRepo.create({
+      email: normalizedEmail,
+      password: hashedPassword,
+    });
     await this.userRepo.save(user);
 
-    const accessToken = this.jwtService.sign({ sub: user.id, email: user.email });
-    return { accessToken };
+    // Générer le token JWT
+    const accessToken = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+    });
+
+    // Générer le CODE DE DÉCHIFFREMENT unique pour cet utilisateur
+    const decryptionCode = this.cryptoService.generateUserDecryptionCode(
+      user.id,
+      user.email,
+    );
+
+    console.log('========================================');
+    console.log('🔐 NOUVEAU COMPTE CRÉÉ');
+    console.log(`   Email: ${user.email}`);
+    console.log(`   Code de déchiffrement: ${decryptionCode}`);
+    console.log('========================================');
+
+    return {
+      accessToken,
+      decryptionCode,  // ← Le code est envoyé à l'utilisateur !
+      user: {
+        id: user.id,
+        email: user.email,
+        createdAt: user.createdAt,
+      },
+    };
   }
 
-  async login(email: string, password: string): Promise<{ accessToken: string }> {
-    const user = await this.userRepo.findOneBy({ email });
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+  /**
+   * Connexion d'un utilisateur existant
+   */
+  async login(email: string, password: string): Promise<{
+    accessToken: string;
+    decryptionCode: string;
+    user: { id: number; email: string; createdAt: Date };
+  }> {
+    const normalizedEmail = email.trim().toLowerCase();
 
-    // typage explicite
-    const isValid: boolean = await bcrypt.compare(password, user.password);
-    if (!isValid) throw new UnauthorizedException('Invalid credentials');
+    // Récupérer l'utilisateur avec son mot de passe
+    const user = await this.userRepo
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email: normalizedEmail })
+      .getOne();
 
-    const accessToken = this.jwtService.sign({ sub: user.id, email: user.email });
-    return { accessToken };
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Vérifier le mot de passe avec Argon2
+    const isPasswordValid = await argon2.verify(user.password, password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Générer le token JWT
+    const accessToken = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+    });
+
+    // Générer le CODE DE DÉCHIFFREMENT
+    const decryptionCode = this.cryptoService.generateUserDecryptionCode(
+      user.id,
+      user.email,
+    );
+
+    console.log('========================================');
+    console.log('🔓 CONNEXION RÉUSSIE');
+    console.log(`   Email: ${user.email}`);
+    console.log(`   Code de déchiffrement: ${decryptionCode}`);
+    console.log('========================================');
+
+    return {
+      accessToken,
+      decryptionCode,  // ← Le code est envoyé à l'utilisateur !
+      user: {
+        id: user.id,
+        email: user.email,
+        createdAt: user.createdAt,
+      },
+    };
   }
 }
