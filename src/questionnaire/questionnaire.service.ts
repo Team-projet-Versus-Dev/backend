@@ -1,4 +1,4 @@
-// src/questionnaire/questionnaire.service.t
+// src/questionnaire/questionnaire.service.ts
 import { Injectable, Inject } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Jeu } from './questionnaire.entity';
